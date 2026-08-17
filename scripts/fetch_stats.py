@@ -18,6 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA_FILE = ROOT / "data" / "history.csv"
 DOCS = ROOT / "docs"
 CHARTS = DOCS / "charts"
+PUBLISHED_DATA_FILE = DOCS / "data" / "history.csv"
 API_BASE_URL = os.environ.get("API_BASE_URL", "https://api.luogu.me").rstrip("/")
 
 
@@ -154,6 +155,10 @@ def composition_chart(rows: list[dict[str, int | str]]) -> None:
 def render_site(rows: list[dict[str, int | str]]) -> None:
     DOCS.mkdir(exist_ok=True)
     CHARTS.mkdir(exist_ok=True)
+    PUBLISHED_DATA_FILE.parent.mkdir(exist_ok=True)
+    PUBLISHED_DATA_FILE.write_bytes(
+        DATA_FILE.read_bytes() if DATA_FILE.exists() else b"date,articles,pastes\n"
+    )
     line_chart("已存档文章总量变化", rows, [("articles", "文章")], "articles-total.svg")
     line_chart("已存档剪贴板总量变化", rows, [("pastes", "剪贴板")], "pastes-total.svg")
     line_chart("每日新增存档数", delta_rows(rows), [("articles", "文章"), ("pastes", "剪贴板")], "daily-additions.svg")
@@ -165,7 +170,7 @@ def render_site(rows: list[dict[str, int | str]]) -> None:
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>洛谷存档历史统计</title><style>
 :root{{color-scheme:light;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#172033;background:#f8fafc}}*{{box-sizing:border-box}}body{{margin:0}}main{{max-width:1100px;margin:auto;padding:48px 24px 64px}}h1{{font-size:32px;margin:0 0 8px}}p{{color:#526176;line-height:1.55}}.updated{{font-size:14px}}.metrics{{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:28px 0}}.metric{{border:1px solid #dbe3ed;background:white;padding:18px;border-radius:6px}}.metric b{{display:block;font-size:30px;color:#172033;margin-top:5px}}.metric span{{color:#64748b;font-size:14px}}section{{margin-top:36px}}h2{{font-size:19px;margin:0 0 12px}}img{{display:block;width:100%;height:auto;border:1px solid #dbe3ed;background:white;border-radius:6px}}footer{{font-size:14px;margin-top:40px}}a{{color:#1d4ed8}}@media(max-width:600px){{main{{padding:32px 16px}}.metrics{{grid-template-columns:1fr}}h1{{font-size:27px}}}}</style></head>
 <body><main><h1>洛谷存档历史统计</h1><p>数据每日从 <a href="https://api.luogu.me">api.luogu.me</a> 自动采集。</p><p class="updated">最近采集：{latest["date"]}</p><div class="metrics"><div class="metric"><span>已存档文章</span><b>{int(latest["articles"]):,}</b></div><div class="metric"><span>已存档剪贴板</span><b>{int(latest["pastes"]):,}</b></div><div class="metric"><span>存档总数</span><b>{total:,}</b></div></div>
-<section><h2>文章总量变化</h2><img src="charts/articles-total.svg" alt="已存档文章总量变化"></section><section><h2>剪贴板总量变化</h2><img src="charts/pastes-total.svg" alt="已存档剪贴板总量变化"></section><section><h2>每日新增</h2><img src="charts/daily-additions.svg" alt="每日新增存档数"></section><section><h2>每月新增</h2><img src="charts/monthly-additions.svg" alt="每月新增存档数"></section><section><h2>存档构成</h2><img src="charts/composition.svg" alt="当前存档构成"></section><footer>历史数据：<a href="../data/history.csv">CSV 文件</a> · 由 GitHub Actions 自动生成。</footer></main></body></html>'''
+<section><h2>文章总量变化</h2><img src="charts/articles-total.svg" alt="已存档文章总量变化"></section><section><h2>剪贴板总量变化</h2><img src="charts/pastes-total.svg" alt="已存档剪贴板总量变化"></section><section><h2>每日新增</h2><img src="charts/daily-additions.svg" alt="每日新增存档数"></section><section><h2>每月新增</h2><img src="charts/monthly-additions.svg" alt="每月新增存档数"></section><section><h2>存档构成</h2><img src="charts/composition.svg" alt="当前存档构成"></section><footer>历史数据：<a href="data/history.csv">CSV 文件</a> · 由 GitHub Actions 自动生成。</footer></main></body></html>'''
     (DOCS / "index.html").write_text(html, encoding="utf-8")
 
 

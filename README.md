@@ -9,6 +9,8 @@ GitHub Actions 会在每天北京时间 08:15 自动运行，也可以在 **Acti
 
 工作流会向 [data/history.csv](data/history.csv) 新增或更新当天的数据，再重新生成 Pages 页面和 SVG 图表。仅在数据或产物变化时创建提交。
 
+公开 CSV 地址：[https://someonehx.github.io/lgs-history/data/history.csv](https://someonehx.github.io/lgs-history/data/history.csv)。
+
 ## 在 Markdown 中嵌入图表
 
 以下是稳定的 Pages 图表地址，可直接放入任意 Markdown 文档。SVG 图表在各种尺寸下均能保持清晰。
