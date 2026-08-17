@@ -1,8 +1,8 @@
-name: Collect and publish statistics
+name: 采集并发布统计数据
 
 on:
   schedule:
-    # 08:15 China Standard Time (UTC+8)
+    # 北京时间 08:15（UTC+8）
     - cron: '15 0 * * *'
   workflow_dispatch:
 
@@ -28,14 +28,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Collect counts and render charts
+      - name: 采集数量并生成图表
         run: python scripts/fetch_stats.py
-      - name: Commit historical snapshot
+      - name: 提交历史快照
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add data/history.csv docs
-          git diff --cached --quiet || git commit -m 'chore: update daily statistics'
+          git diff --cached --quiet || git commit -m 'chore: 更新每日统计数据'
           git push
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
