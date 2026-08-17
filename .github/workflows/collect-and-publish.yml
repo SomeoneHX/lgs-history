@@ -1,6 +1,9 @@
 name: 采集并发布统计数据
 
 on:
+  push:
+    branches:
+      - main
   schedule:
     # 北京时间 08:15（UTC+8）
     - cron: '15 0 * * *'
