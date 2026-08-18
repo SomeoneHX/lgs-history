@@ -10,7 +10,7 @@ import os
 import sys
 import urllib.error
 import urllib.request
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -166,10 +166,22 @@ def render_site(rows: list[dict[str, int | str]]) -> None:
     composition_chart(rows)
     latest = rows[-1] if rows else {"date": "等待首次采集", "articles": 0, "pastes": 0}
     total = int(latest["articles"]) + int(latest["pastes"])
+    previous = None
+    if rows:
+        latest_date = date.fromisoformat(str(latest["date"]))
+        if len(rows) > 1 and str(rows[-2]["date"]) == (latest_date - timedelta(days=1)).isoformat():
+            previous = rows[-2]
+    if previous is None:
+        change_line = '<div class="change-line"><span>较昨日变化</span><b>暂无昨日快照</b></div>'
+    else:
+        article_change = int(latest["articles"]) - int(previous["articles"])
+        paste_change = int(latest["pastes"]) - int(previous["pastes"])
+        total_change = article_change + paste_change
+        change_line = f'<div class="change-line"><span>较昨日变化</span><b>文章 {article_change:+,} · 剪贴板 {paste_change:+,} · 总量 {total_change:+,}</b></div>'
     html = f'''<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>洛谷存档历史统计</title><style>
-:root{{color-scheme:light;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#172033;background:#f8fafc}}*{{box-sizing:border-box}}body{{margin:0}}main{{max-width:1100px;margin:auto;padding:48px 24px 64px}}h1{{font-size:32px;margin:0 0 8px}}p{{color:#526176;line-height:1.55}}.updated{{font-size:14px}}.metrics{{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:28px 0}}.metric{{border:1px solid #dbe3ed;background:white;padding:18px;border-radius:6px}}.metric b{{display:block;font-size:30px;color:#172033;margin-top:5px}}.metric span{{color:#64748b;font-size:14px}}section{{margin-top:36px}}h2{{font-size:19px;margin:0 0 12px}}img{{display:block;width:100%;height:auto;border:1px solid #dbe3ed;background:white;border-radius:6px}}footer{{font-size:14px;margin-top:40px}}a{{color:#1d4ed8}}@media(max-width:600px){{main{{padding:32px 16px}}.metrics{{grid-template-columns:1fr}}h1{{font-size:27px}}}}</style></head>
-<body><main><h1>洛谷存档历史统计</h1><p>数据每日从 <a href="https://api.luogu.me">api.luogu.me</a> 自动采集。</p><p class="updated">最近采集：{latest["date"]}</p><div class="metrics"><div class="metric"><span>已存档文章</span><b>{int(latest["articles"]):,}</b></div><div class="metric"><span>已存档剪贴板</span><b>{int(latest["pastes"]):,}</b></div><div class="metric"><span>存档总数</span><b>{total:,}</b></div></div>
+:root{{color-scheme:light;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#172033;background:#f8fafc}}*{{box-sizing:border-box}}body{{margin:0}}main{{max-width:1100px;margin:auto;padding:48px 24px 64px}}h1{{font-size:32px;margin:0 0 8px}}p{{color:#526176;line-height:1.55}}.updated{{font-size:14px}}.metrics{{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:28px 0 12px}}.metric{{border:1px solid #dbe3ed;background:white;padding:18px;border-radius:6px}}.metric b{{display:block;font-size:30px;color:#172033;margin-top:5px}}.metric span{{color:#64748b;font-size:14px}}.change-line{{display:flex;align-items:center;gap:14px;min-height:42px;padding:10px 14px;border-left:3px solid #2563eb;background:#eff6ff;color:#475569;font-size:14px}}.change-line b{{color:#1d4ed8;font-weight:600}}section{{margin-top:36px}}h2{{font-size:19px;margin:0 0 12px}}img{{display:block;width:100%;height:auto;border:1px solid #dbe3ed;background:white;border-radius:6px}}footer{{font-size:14px;margin-top:40px}}a{{color:#1d4ed8}}@media(max-width:600px){{main{{padding:32px 16px}}.metrics{{grid-template-columns:1fr}}.change-line{{align-items:flex-start;flex-direction:column;gap:4px}}h1{{font-size:27px}}}}</style></head>
+<body><main><h1>洛谷存档历史统计</h1><p>数据每日从 <a href="https://api.luogu.me">api.luogu.me</a> 自动采集。</p><p class="updated">最近采集：{latest["date"]}</p><div class="metrics"><div class="metric"><span>已存档文章</span><b>{int(latest["articles"]):,}</b></div><div class="metric"><span>已存档剪贴板</span><b>{int(latest["pastes"]):,}</b></div><div class="metric"><span>存档总数</span><b>{total:,}</b></div></div>{change_line}
 <section><h2>文章总量变化</h2><img src="charts/articles-total.svg" alt="已存档文章总量变化"></section><section><h2>剪贴板总量变化</h2><img src="charts/pastes-total.svg" alt="已存档剪贴板总量变化"></section><section><h2>每日新增</h2><img src="charts/daily-additions.svg" alt="每日新增存档数"></section><section><h2>每月新增</h2><img src="charts/monthly-additions.svg" alt="每月新增存档数"></section><section><h2>存档构成</h2><img src="charts/composition.svg" alt="当前存档构成"></section><footer>历史数据：<a href="data/history.csv">CSV 文件</a> · 由 GitHub Actions 自动生成。</footer></main></body></html>'''
     (DOCS / "index.html").write_text(html, encoding="utf-8")
 
