@@ -20,6 +20,7 @@ DOCS = ROOT / "docs"
 CHARTS = DOCS / "charts"
 PUBLISHED_DATA_FILE = DOCS / "data" / "history.csv"
 API_BASE_URL = os.environ.get("API_BASE_URL", "https://api.luogu.me").rstrip("/")
+DAILY_ADDITIONS_DAYS = 30
 
 
 def china_date() -> str:
@@ -120,6 +121,29 @@ def delta_rows(rows: list[dict[str, int | str]]) -> list[dict[str, int | str]]:
     return result
 
 
+def recent_delta_rows(
+    rows: list[dict[str, int | str]], days: int = DAILY_ADDITIONS_DAYS
+) -> list[dict[str, int | str]]:
+    """返回最新快照日期前指定自然日窗口内的每日变化。"""
+    if not rows or days <= 0:
+        return []
+
+    ordered = sorted(rows, key=lambda row: str(row["date"]))
+    latest_date = date.fromisoformat(str(ordered[-1]["date"]))
+    first_date = latest_date - timedelta(days=days - 1)
+    first_index = next(
+        (index for index, row in enumerate(ordered) if date.fromisoformat(str(row["date"])) >= first_date),
+        len(ordered),
+    )
+    if first_index == len(ordered):
+        return []
+
+    # Include the preceding snapshot as a baseline so the first in-window
+    # value is still a real change rather than an omitted data point.
+    window = ordered[max(0, first_index - 1) :]
+    return [row for row in delta_rows(window) if str(row["date"]) >= first_date.isoformat()]
+
+
 def monthly_rows(rows: list[dict[str, int | str]]) -> list[dict[str, int | str]]:
     monthly: dict[str, dict[str, int | str]] = {}
     for row in delta_rows(rows):
@@ -161,7 +185,12 @@ def render_site(rows: list[dict[str, int | str]]) -> None:
     )
     line_chart("已存档文章总量变化", rows, [("articles", "文章")], "articles-total.svg")
     line_chart("已存档剪贴板总量变化", rows, [("pastes", "剪贴板")], "pastes-total.svg")
-    line_chart("每日新增存档数", delta_rows(rows), [("articles", "文章"), ("pastes", "剪贴板")], "daily-additions.svg")
+    line_chart(
+        "每日新增存档数",
+        recent_delta_rows(rows),
+        [("articles", "文章"), ("pastes", "剪贴板")],
+        "daily-additions.svg",
+    )
     line_chart("每月新增存档数", monthly_rows(rows), [("articles", "文章"), ("pastes", "剪贴板")], "monthly-additions.svg")
     composition_chart(rows)
     latest = rows[-1] if rows else {"date": "等待首次采集", "articles": 0, "pastes": 0}
