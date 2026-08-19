@@ -3,8 +3,8 @@
 <rect width="100%" height="100%" fill="#ffffff"/>
 <text x="48" y="36" class="title">当前存档构成</text>
 <path d="M 200 90 A 120 120 0 1 1 88.45 254.23" fill="none" stroke="#2563eb" stroke-width="40"/><path d="M 88.45 254.23 A 120 120 0 0 1 200 90" fill="none" stroke="#f97316" stroke-width="40"/>
-<text x="200" y="205" text-anchor="middle" class="value">216,229</text><text x="200" y="226" text-anchor="middle" class="muted">存档总数</text>
-<rect x="430" y="130" width="12" height="12" fill="#2563eb" rx="2"/><text x="450" y="141" class="muted">文章：149,180（69.0%）</text>
-<rect x="430" y="175" width="12" height="12" fill="#f97316" rx="2"/><text x="450" y="186" class="muted">剪贴板：67,049（31.0%）</text>
+<text x="200" y="205" text-anchor="middle" class="value">216,296</text><text x="200" y="226" text-anchor="middle" class="muted">存档总数</text>
+<rect x="430" y="130" width="12" height="12" fill="#2563eb" rx="2"/><text x="450" y="141" class="muted">文章：149,226（69.0%）</text>
+<rect x="430" y="175" width="12" height="12" fill="#f97316" rx="2"/><text x="450" y="186" class="muted">剪贴板：67,070（31.0%）</text>
 <text x="48" y="360" class="muted">快照日期：2026-08-19</text>
 </svg>
